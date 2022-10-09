@@ -1,16 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "../src/progressbar.h"
-#ifdef __linux__ 
-#elif _WIN32
-#include <windows.h>
-#else
-#error "OS not supported!"
-#endif
-
-#ifdef _WIN32
-    #define usleep(X) Sleep(X/1000);
-#endif
 
 int main(void) {
     lib_init();
