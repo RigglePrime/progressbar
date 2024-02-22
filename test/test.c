@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+#ifdef __unix__ 
+#include <unistd.h>
+#endif
 #include "../src/progressbar.h"
 
 int main(void) {

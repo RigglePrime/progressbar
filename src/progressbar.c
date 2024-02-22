@@ -25,17 +25,20 @@ int digits(int n) {
     return floor(log10(abs(n))) + 1;
 }
 
+#if _WIN32
 int handle_interrupt(int sig) {
-#if _WIN32
     if (sig == CTRL_C_EVENT) {
-#endif
-    puts("\x1B[?25h");
-    exit(0);
-#if _WIN32
+        puts("\x1B[?25h");
+        exit(0);
     }
-#endif
     return 1; // To satisfy WAPI
 }
+#else
+void handle_interrupt(int sig) {
+    puts("\x1B[?25h");
+    exit(0);
+}
+#endif
 
 /*
  * Clears the last and prints the current progress bar
@@ -150,12 +153,26 @@ void p_iter_destroy(p_iter* it) {
  */
 long p_iter_next(p_iter* it) {
     print_bar(it);
-    if (it->data && it->unit_size)
-        return it->iterations < it->length ? *(it->data+(it->iterations++ * it->unit_size)) : NULL;
-    else
-        return it->iterations < it->length ? it->iterations++ : NULL;
+    if (it->data && it->unit_size) {
+        // When iterating over data
+        if (it->iterations < it->length) {
+            // Perform pointer arithmetic to get the next element, cast it appropriately
+            long nextElement = *((long *)(it->data + (it->iterations++ * it->unit_size)));
+            return nextElement;
+        } else {
+            // End of iteration
+            return -1; // Special value indicating end
+        }
+    } else {
+        // When simply counting iterations
+        if (it->iterations < it->length) {
+            return it->iterations++;
+        } else {
+            // End of iteration
+            return -1; // Special value indicating end
+        }
+    }
 }
-
 /*
  * Initializes the library. Safe to call as many times as you want.
  */
